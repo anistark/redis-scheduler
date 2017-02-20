@@ -1,21 +1,20 @@
-# Import classes from your brand new package
+print(' -- Test Started -- ')
+
 from RedisScheduler import RedisScheduler
 
-# Create an object of Mammals class & call a method of it
-import redis
-# try:
-#     r = redis.StrictRedis(host='localhost', port=6379, db=0)
-#     print(' -- Redis Connection Established -- ')
-#     r.set('foo', 'bar', ex=100)
-#     r.get('foo')
-# except Exception as e:
-#     print(e)
+from time import time, sleep
+import multiprocessing, json
 
-redis_scheduler = RedisScheduler(host='localhost', port=6379)
+listener = RedisScheduler()
+listener_service = multiprocessing.Process(target=listener.subscribe_event, args=('__keyevent@0__:expired',))
+setter = RedisScheduler()
+listener_service.start()
 
-object_added = redis_scheduler.add('food', 'Mango', 100)
-
-# redis_scheduler.printMembers()
-print(object_added)
+while True:
+    key = str(int(time()))
+    value = json.dumps({'time': time(), 'foo':{'bar': 'foo', 'baz': 3, 'bor': {'foo':'bar', 'bar': 'foo'}}})
+    ttl = 7
+    setter.add_key(key, value, ttl)
+    sleep(10)
 
 print(' -- Test Ended -- ')
