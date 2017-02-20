@@ -4,7 +4,6 @@ import multiprocessing, json
 
 class RedisScheduler:
 
-
     def __init__(self, host='localhost', port=6379, path=None, db=0, password=None):
         try:
             if path:
@@ -23,8 +22,10 @@ class RedisScheduler:
 
     def add_key(self, key, value, ttl=604800):
         try:
+            print(' -- Adding Key -- ')
             key_added = self.redis_client.set(key, value, ex=ttl)
             shadow_key_added = self.redis_client.set('_' + key, value)
+            print(key_added)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
@@ -32,17 +33,24 @@ class RedisScheduler:
         return key_added
 
 
-    def subscribe_event(self, subscribe_channel='__key@0__:expired'):
+    def subscribe_event(self, subscribe_channel='__key@0__:expired', handler='email'):
+        print(subscribe_channel, handler)
+        print(' ---- ')
         try:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
             message = pubsub_client.get_message()
+            print(' >> message received : ')
+            print(message)
             for message in pubsub_client.listen():
+                print('in 1')
                 expired_key = self.get_key(message['data'])
+                print(' >> expired key : '+str(expired_key))
                 shadow_key = '_%s' % expired_key
-                expired_key_value = self.redis_client.get(shadow_key)
                 try:
-                    expired_key_json = json.loads(expired_key_value.decode('utf-8'))
+                    expired_key_value = self.redis_client.get(shadow_key)
+                    print(' >> expired key value for handler '+handler+' : '+ str(expired_key_value))
+                    expired_key_json = json.loads(self.get_key(expired_key_value))
                 except Exception as e:
                     print(e)
                 self.redis_client.delete(shadow_key)
@@ -51,10 +59,15 @@ class RedisScheduler:
 
 
     def get_key(self, s):
-        if isinstance(s, str):
-            string = s
-        elif isinstance(s, bytes):
+        string = s
+        if isinstance(s, bytes):
             string = s.decode('utf-8')
-        else:
-            string = s
         return string
+
+
+    def start_listening(self, subscribe_channel='__key@0__:expired', handler='email'):
+        print(' -- initiating listener -- ')
+        print(subscribe_channel, handler)
+        listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel,handler,))
+        listener_service.start()
+        print(' -- listener initiated -- ')
