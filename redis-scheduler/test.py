@@ -6,7 +6,7 @@ from time import time, sleep
 import json
 
 listener = RedisScheduler()
-listener.start_listening()
+listener.start_listening(subscribe_channel='__keyevent@0__:expired')
 
 setter = RedisScheduler()
 

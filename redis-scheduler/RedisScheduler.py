@@ -31,7 +31,7 @@ class RedisScheduler:
         return key_added
 
 
-    def subscribe_event(self, subscribe_channel='__key@0__:expired'):
+    def subscribe_event(self, subscribe_channel='__keyevent@0__:expired'):
         try:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
@@ -57,14 +57,10 @@ class RedisScheduler:
         return string
 
 
-    def start_listening(self, subscribe_channel='__key@0__:expired'):
-        print(' -- initiating listener -- ')
-        print(subscribe_channel)
-        print(type(subscribe_channel))
-        print('-----------------')
+    def start_listening(self, subscribe_channel='__keyevent@0__:expired'):
+        print(' -- listener initiatiating -- ')
         try:
-            listener = RedisScheduler()
-            listener_service = multiprocessing.Process(target=listener.subscribe_event, args=('__keyevent@0__:expired',))
+            listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel,))
             listener_service.start()
         except Exception as e:
             print(e)
