@@ -10,11 +10,9 @@ listener.start_listening(subscribe_channel='__keyevent@0__:expired')
 
 setter = RedisScheduler()
 
-while True:
-    key = str(int(time()))
-    value = json.dumps({'time': time(), 'foo':{'bar': 'foo', 'baz': 3, 'bor': {'foo':'bar', 'bar': 'foo'}}})
-    ttl = 2
-    setter.add_key(key=key, value=value, ttl=ttl)
-    sleep(3)
+key = str(int(time()))
+value = json.dumps({'email_to': 'anirudha@venturesity.com'})
+scheduled_time = '2017-02-25T12:30:00+05:30'
+setter.register_event(key, value, scheduled_time)
 
 print(' -- Test Ended -- ')

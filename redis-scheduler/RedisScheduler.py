@@ -1,4 +1,7 @@
-import redis, json, multiprocessing
+import redis, json, multiprocessing, pytz
+from datetime import datetime, timezone
+import dateutil.parser
+from dateutil.tz import *
 
 class RedisScheduler:
 
@@ -21,7 +24,7 @@ class RedisScheduler:
     def add_key(self, key, value, ttl=604800):
         try:
             print(' -- Adding Key -- ')
-            key_added = self.redis_client.set(key, value, ex=ttl)
+            key_added = self.redis_client.set(key, '', ex=ttl)
             shadow_key_added = self.redis_client.set('_' + key, value)
             print(key_added)
         except Exception as e:
@@ -29,6 +32,23 @@ class RedisScheduler:
             print(' -- Error while setting key -- ')
             key_added = False
         return key_added
+
+
+    def register_event(self, key, value, expiry_time):
+        response = False
+        try:
+            # ttl = int(time())-int(expiry_time)
+            ttl = int(self.get_timedelta(expiry_time))
+            print(ttl)
+            if ttl>0:
+                print(' -- Adding Key -- ')
+                response = self.redis_client.set(key, "0", ex=ttl)
+                shadow_key_added = self.redis_client.set('_' + key, value)
+                print(response)
+        except Exception as e:
+            print(e)
+            print(' -- Error while setting key -- ')
+        return response
 
 
     def subscribe_event(self, subscribe_channel='__keyevent@0__:expired'):
@@ -65,4 +85,14 @@ class RedisScheduler:
         except Exception as e:
             print(e)
         print(' -- listener initiated -- ')
+
+
+    def get_timedelta(self, timestamp):
+        # current_time = datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S%z')
+        current_time = datetime.now(tzutc())
+        # parsed_timestamp = datetime.strptime(''.join(timestamp.rsplit(':', 1)), '%Y-%m-%dT%H:%M:%S%z')
+        parsed_timestamp = dateutil.parser.parse(timestamp)
+        # parsed_timestamp_in_utc = datetime_obj.astimezone(tz=timezone.utc)
+        parsed_timestamp_in_utc = parsed_timestamp.astimezone(tzutc())
+        return (parsed_timestamp_in_utc-current_time).total_seconds()
 

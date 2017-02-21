@@ -3,5 +3,5 @@ setup.cfg
 setup.py
 redis-scheduler/RedisScheduler.py
 redis-scheduler/__init__.py
-redis-scheduler/listen.py
 redis-scheduler/test.py
+redis-scheduler/__pycache__/RedisScheduler.cpython-35.pyc

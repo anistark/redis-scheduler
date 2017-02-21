@@ -37,6 +37,12 @@ setup(
     url = 'https://github.com/anistark/redis-scheduler', # use the URL to the github repo
     # download_url = 'https://github.com/anistark/redis-scheduler/tarball/0.1', # I'll explain this in a second
     keywords = ['redis-scheduler','scheduler', 'anistark', 'python', 'redis', 'trigger'], # arbitrary keywords
+    install_requires=[
+        'redis',
+        'pytz',
+        'python-dateutil'
+    ],
+    dependency_links=[],
     classifiers = [
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

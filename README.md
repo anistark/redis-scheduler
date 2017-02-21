@@ -25,7 +25,7 @@ listener = RedisScheduler()
 listener.start_listening()
 ```
 
-### Adding event key
+### Registering your event
 
 ```
 setter = RedisScheduler()
@@ -39,11 +39,15 @@ key = str(int(time()))
 value = json.dumps({'time': time(), 'foo':{'bar': 'foo', 'baz': 3, 'bor': {'foo':'bar', 'bar': 'foo'}}})
 ```
 
-```
-ttl = 200  # 200sec
-```
+#### Scheduled time for the event in iso format with timestamp
 
 ```
-setter.add_key(key=key, value=value, ttl=ttl)
+scheduled_time = '2017-02-25T12:30:00+05:30'
+```
+
+### Register the event to be scheduled
+
+```
+setter.register_event(key, value, scheduled_time)
 ```
 
