@@ -6,13 +6,15 @@ from time import time, sleep
 import json
 
 listener = RedisScheduler()
-listener.start_listening(subscribe_channel='__keyevent@0__:expired')
+handler = 'sqs'
+listener.set_sqs_keys(access_key='', secret_key='', queue_name='emails', region='ap-south-1')
+listener.start_listening(subscribe_channel='__keyevent@0__:expired', handler=handler)
 
 setter = RedisScheduler()
 
 key = str(int(time()))
-value = json.dumps({'email_to': 'anirudha@venturesity.com'})
-scheduled_time = '2017-02-25T12:30:00+05:30'
+value = json.dumps({"multiple":False,"emailTo":"anirudha@venturesity.com","emailSubject":"Test Subject","emailBodyText":"Test Body","emailCc":"","emailBcc":"","emailType":"general","attachments":[],"emailBody":{"body":"Hello World body!!"}})
+scheduled_time = '2017-02-23T12:59:00+05:30'
 setter.register_event(key, value, scheduled_time)
 
 print(' -- Test Ended -- ')

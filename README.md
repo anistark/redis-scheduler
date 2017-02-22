@@ -17,13 +17,25 @@ from redis-scheduler import RedisScheduler
 
 ### Start Listening
 
+
+Initialise RedisScheduler
+
 ```
 listener = RedisScheduler()
 ```
 
+Set SQS keys
+
 ```
-listener.start_listening()
+listener.set_sqs_keys(access_key='', secret_key='', queue_name='emails', region='ap-south-1')
 ```
+
+Start Listening
+
+```
+listener.start_listening(handler='sqs')
+```
+
 
 ### Registering your event
 

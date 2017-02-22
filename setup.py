@@ -28,19 +28,21 @@ def get_package_data(package):
 
 setup(
     name = 'redis-scheduler',
-    packages = ['redis-scheduler'], # this must be the same as the name above
+    packages = ['redis-scheduler'],
     package_data=get_package_data('redis-scheduler'),
     version = get_version('redis-scheduler'),
     description = 'A redis scheduling lib',
     author = 'Kumar Anirudha',
     author_email = 'anirudhastark@yahoo.com',
-    url = 'https://github.com/anistark/redis-scheduler', # use the URL to the github repo
-    # download_url = 'https://github.com/anistark/redis-scheduler/tarball/0.1', # I'll explain this in a second
-    keywords = ['redis-scheduler','scheduler', 'anistark', 'python', 'redis', 'trigger'], # arbitrary keywords
+    url = 'https://github.com/anistark/redis-scheduler',
+    keywords = ['redis-scheduler','scheduler', 'anistark', 'python', 'redis', 'trigger', 'sqs', 'aws', 'boto3',
+                'boto'],
     install_requires=[
         'redis',
         'pytz',
-        'python-dateutil'
+        'python-dateutil',
+        'boto3',
+        'botocore'
     ],
     dependency_links=[],
     classifiers = [

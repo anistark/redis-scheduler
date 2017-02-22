@@ -2,6 +2,8 @@ import redis, json, multiprocessing, pytz
 from datetime import datetime, timezone
 import dateutil.parser
 from dateutil.tz import *
+import boto3, botocore
+
 
 class RedisScheduler:
 
@@ -37,9 +39,9 @@ class RedisScheduler:
     def register_event(self, key, value, expiry_time):
         response = False
         try:
-            # ttl = int(time())-int(expiry_time)
             ttl = int(self.get_timedelta(expiry_time))
             print(ttl)
+            ttl = 2
             if ttl>0:
                 print(' -- Adding Key -- ')
                 response = self.redis_client.set(key, "0", ex=ttl)
@@ -51,7 +53,9 @@ class RedisScheduler:
         return response
 
 
-    def subscribe_event(self, subscribe_channel='__keyevent@0__:expired'):
+    def subscribe_event(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
+        print('-- in subscribe event --')
+        print(subscribe_channel, handler)
         try:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
@@ -61,8 +65,10 @@ class RedisScheduler:
                 shadow_key = '_%s' % expired_key
                 try:
                     expired_key_value = self.redis_client.get(shadow_key)
-                    print(' >> expired key value : '+ str(expired_key_value))
                     expired_key_json = json.loads(self.get_key(expired_key_value))
+                    print(' vv expired key value vv ')
+                    print(expired_key_json)
+                    self.send_to_sqs(expired_key_json)
                 except Exception as e:
                     print(e)
                 self.redis_client.delete(shadow_key)
@@ -77,10 +83,11 @@ class RedisScheduler:
         return string
 
 
-    def start_listening(self, subscribe_channel='__keyevent@0__:expired'):
-        print(' -- listener initiatiating -- ')
+    def start_listening(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
+        print(' -- listener initiating -- ')
+        print(subscribe_channel, handler)
         try:
-            listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel,))
+            listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
             listener_service.start()
         except Exception as e:
             print(e)
@@ -96,3 +103,29 @@ class RedisScheduler:
         parsed_timestamp_in_utc = parsed_timestamp.astimezone(tzutc())
         return (parsed_timestamp_in_utc-current_time).total_seconds()
 
+
+    def set_sqs_keys(self, access_key, secret_key, queue_name, region='ap-south-1'):
+        try:
+            self.boto3_client = boto3.client(
+                    'sqs',
+                    aws_access_key_id=access_key,
+                    aws_secret_access_key=secret_key,
+                    region_name=region
+            )
+            self.queue_url = self.boto3_client.get_queue_url(QueueName=queue_name)['QueueUrl']
+        except Exception as e:
+            print(e)
+            print('^^ Some Error in connection to aws sqs ^^')
+
+
+    def send_to_sqs(self, msg):
+        print('-- Sending to SQS --')
+        try:
+            response = self.boto3_client.send_message(
+                    QueueUrl=self.queue_url,
+                    MessageBody=json.dumps(msg)
+            )
+            print('-- Sent to SQS --')
+        except Exception as e:
+            print(e)
+            print('^^ Some Error in sending to sqs ^^')
