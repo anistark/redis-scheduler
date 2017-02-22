@@ -63,3 +63,6 @@ scheduled_time = '2017-02-25T12:30:00+05:30'
 setter.register_event(key, value, scheduled_time)
 ```
 
+
+#### Contributions welcome for more handlers and enhancements. Contribution document coming soon.
+
