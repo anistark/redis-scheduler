@@ -62,7 +62,7 @@ scheduled_time = '2017-02-25T12:30:00+05:30'
 Register your event
 
 ```
-setter.register_event(key, value, scheduled_time)
+setter.register_event(value, scheduled_time)
 ```
 
 Modify your registered event
