@@ -1,8 +1,7 @@
-import redis, json, multiprocessing, pytz
+import redis, json, multiprocessing, pytz, uuid, boto3, botocore
 from datetime import datetime, timezone
 import dateutil.parser
 from dateutil.tz import *
-import boto3, botocore
 
 
 class RedisScheduler:
@@ -36,12 +35,13 @@ class RedisScheduler:
         return key_added
 
 
-    def register_event(self, key, value, expiry_time):
+    def register_event(self, value, expiry_time):
         response = False
         try:
             ttl = int(self.get_timedelta(expiry_time))
             if ttl>0:
                 print(' -- Adding Key -- ')
+                key = 'emails_'+str(uuid.uuid1())
                 response = self.redis_client.set(key, "0", ex=ttl)
                 shadow_key_added = self.redis_client.set('_' + key, value)
                 print(response)

@@ -12,11 +12,11 @@ import json
 
 setter = RedisScheduler()
 
-key = str(int(time()))
 value = json.dumps({"multiple":False,"emailTo":"anirudha@venturesity.com","emailSubject":"Test Subject","emailBodyText":"Test Body","emailCc":"","emailBcc":"","emailType":"general","attachments":[],"emailBody":{"body":"Hello World body!!"}})
 scheduled_time = '2017-02-27T12:59:00+05:30'
-setter.register_event(key, value, scheduled_time)
+setter.register_event(value, scheduled_time)
 
+key = ''
 setter.modify_event(key, value, scheduled_time)
 
 print(' -- Test Ended -- ')

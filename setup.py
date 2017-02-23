@@ -42,7 +42,8 @@ setup(
         'pytz',
         'python-dateutil',
         'boto3',
-        'botocore'
+        'botocore',
+        'uuid'
     ],
     dependency_links=[],
     classifiers = [
