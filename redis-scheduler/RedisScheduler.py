@@ -40,13 +40,28 @@ class RedisScheduler:
         response = False
         try:
             ttl = int(self.get_timedelta(expiry_time))
-            print(ttl)
-            ttl = 2
             if ttl>0:
                 print(' -- Adding Key -- ')
                 response = self.redis_client.set(key, "0", ex=ttl)
                 shadow_key_added = self.redis_client.set('_' + key, value)
                 print(response)
+        except Exception as e:
+            print(e)
+            print(' -- Error while setting key -- ')
+        return response
+
+
+    def modify_event(self, key, value, scheduled_time):
+        print('-- Modifying Event --')
+        response = False
+        try:
+            ttl = int(self.get_timedelta(scheduled_time))
+            if ttl>0:
+                # Check for existing shadow key
+                check_redis_key = self.redis_client.get(key)
+                if check_redis_key:
+                    redis_key = self.redis_client.set(key, value, scheduled_time)
+                    shadow_key_added = self.redis_client.set('_' + key, value)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
