@@ -77,6 +77,7 @@ class RedisScheduler:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
             for message in pubsub_client.listen():
+                print(' + -- in 1 -- + ')
                 expired_key = self.get_key(message['data'])
                 print(' >> expired key : '+str(expired_key))
                 shadow_key = '_%s' % expired_key
@@ -108,8 +109,14 @@ class RedisScheduler:
         print(' -- listener initiating -- ')
         print(subscribe_channel, handler)
         try:
+            # Close all previous multiprocessing Process before starting
+            termination_provesses = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,)).terminate()
+            print(termination_provesses)
+            print(' v XOX v ')
             listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
             listener_service.start()
+            print(listener_service)
+            print(' ^^ OXO ^^ ')
         except Exception as e:
             print(e)
         print(' -- listener initiated -- ')
