@@ -27,10 +27,10 @@ def get_package_data(package):
 
 
 setup(
-    name = 'redis-scheduler',
-    packages = ['redis-scheduler'],
+    name = 'RedisScheduler',
+    packages = ['RedisScheduler'],
     package_data=get_package_data('redis-scheduler'),
-    version = get_version('redis-scheduler'),
+    version = get_version('RedisScheduler'),
     description = 'A redis scheduling lib',
     author = 'Kumar Anirudha',
     author_email = 'anirudhastark@yahoo.com',
