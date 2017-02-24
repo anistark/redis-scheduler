@@ -1,18 +1,18 @@
 # RedisScheduler
 
-[![license](https://img.shields.io/github/license/anistark/redis-scheduler.svg)](https://github.com/anistark/redis-scheduler/blob/master/LICENSE) [![pypi](https://img.shields.io/pypi/v/redis-scheduler.svg)](https://pypi.python.org/pypi/redis-scheduler)
+[![license](https://img.shields.io/github/license/anistark/redis-scheduler.svg)](https://github.com/anistark/redis-scheduler/blob/master/LICENSE) [![pypi](https://img.shields.io/pypi/v/RedisScheduler.svg)](https://pypi.python.org/pypi/RedisScheduler)
 
 
 ## Install via pip
 
 ```
-pip install redis-scheduler
+pip install RedisScheduler
 ```
 
 ## Usage
 
 ```
-from redis-scheduler import RedisScheduler
+from RedisScheduler.RedisScheduler import RedisScheduler
 ```
 
 ### Start Listening
