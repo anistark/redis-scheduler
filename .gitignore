@@ -90,3 +90,6 @@ ENV/
 
 # Idea Files
 .idea
+
+# Test Files
+RedisScheduler/test.py

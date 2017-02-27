@@ -39,6 +39,7 @@ class RedisScheduler:
         response = False
         try:
             ttl = int(self.get_timedelta(expiry_time))
+            ttl = 2
             if ttl>0:
                 print(' -- Adding Key -- ')
                 key = 'emails_'+str(uuid.uuid1())
@@ -83,11 +84,12 @@ class RedisScheduler:
                 shadow_key = '_%s' % expired_key
                 try:
                     expired_key_value = self.redis_client.get(shadow_key)
-                    print(expired_key_value)
-                    expired_key_json = json.loads(self.get_key(expired_key_value))
-                    print(' vv expired key value vv ')
-                    print(expired_key_json)
-                    self.send_to_sqs(expired_key_json)
+                    if expired_key_value:
+                        expired_key_json = json.loads(self.get_key(expired_key_value))
+                        print(' vv expired key value vv ')
+                        print(expired_key_json)
+                        if expired_key_json:
+                            self.send_to_sqs(expired_key_json)
                 except Exception as e:
                     print(e)
                 self.redis_client.delete(shadow_key)
@@ -102,6 +104,7 @@ class RedisScheduler:
                 string = s.decode('utf-8')
         except Exception as e:
             print(e)
+            print(' -- in Exception -- ')
         return string
 
 
@@ -109,14 +112,8 @@ class RedisScheduler:
         print(' -- listener initiating -- ')
         print(subscribe_channel, handler)
         try:
-            # Close all previous multiprocessing Process before starting
-            termination_provesses = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,)).terminate()
-            print(termination_provesses)
-            print(' v XOX v ')
             listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
             listener_service.start()
-            print(listener_service)
-            print(' ^^ OXO ^^ ')
         except Exception as e:
             print(e)
         print(' -- listener initiated -- ')
@@ -157,3 +154,9 @@ class RedisScheduler:
         except Exception as e:
             print(e)
             print('^^ Some Error in sending to sqs ^^')
+
+
+    # def terminate_processes(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
+    #     print(' -- listener previous stopping -- ')
+    #     listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
+    #     listener_service.terminate()
