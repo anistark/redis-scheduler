@@ -16,6 +16,8 @@ class RedisScheduler:
                 self.redis_client.auth(password)
             if db:
                 self.redis_client.select(db)
+            self.boto3_client = ''
+            self.queue_url = ''
             print(' -- Redis Connection Success -- ')
         except Exception as e:
             print(' -- Redis Connection Failed -- ')
@@ -87,7 +89,7 @@ class RedisScheduler:
                     redis_key = self.redis_client.set(key, value, scheduled_time)
                     shadow_key_added = self.redis_client.set('_' + key, value)
                 else:
-                    self.register_event(value, expiry_time)
+                    self.register_event(value, scheduled_time)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
