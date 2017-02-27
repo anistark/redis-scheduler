@@ -83,13 +83,18 @@ class RedisScheduler:
                 print(' >> expired key : '+str(expired_key))
                 shadow_key = '_%s' % expired_key
                 try:
+                    print(' + -- in 2 -- + ')
                     expired_key_value = self.redis_client.get(shadow_key)
+                    print(' + -- in 3 -- + ')
                     if expired_key_value:
+                        print(' + -- in 4 -- + ')
                         expired_key_json = json.loads(self.get_key(expired_key_value))
                         print(' vv expired key value vv ')
                         print(expired_key_json)
                         if expired_key_json:
+                            print(' + -- in 5 -- + ')
                             self.send_to_sqs(expired_key_json)
+                            print(' + -- in 6 -- + ')
                 except Exception as e:
                     print(e)
                 self.redis_client.delete(shadow_key)
