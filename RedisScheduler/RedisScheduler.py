@@ -39,7 +39,6 @@ class RedisScheduler:
         response = False
         try:
             ttl = int(self.get_timedelta(expiry_time))
-            ttl = 2
             if ttl>0:
                 print(' -- Adding Key -- ')
                 key = 'emails_'+str(uuid.uuid1())
