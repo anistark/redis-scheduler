@@ -84,6 +84,7 @@ class RedisScheduler:
                 shadow_key = '_%s' % expired_key
                 try:
                     print(' + -- in 2 -- + ')
+                    print(shadow_key)
                     expired_key_value = self.redis_client.get(shadow_key)
                     print(' + -- in 3 -- + ')
                     if expired_key_value:
