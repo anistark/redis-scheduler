@@ -78,7 +78,7 @@ class RedisScheduler:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
             for message in pubsub_client.listen():
-                expired_key = self.get_key(message['data'])
+                expired_key = message['data'].decode('utf-8')
                 print(' >> expired key : '+str(expired_key))
                 shadow_key = '_%s' % expired_key
                 try:
@@ -87,7 +87,7 @@ class RedisScheduler:
                         print(' + -- in 3 -- + ')
                         if expired_key_value:
                             print(' + -- in 4 -- + ')
-                            expired_key_json = json.loads(self.get_key(expired_key_value))
+                            expired_key_json = json.loads(expired_key_value.decode('utf-8'))
                             print(' vv expired key value vv ')
                             print(expired_key_json)
                             if expired_key_json:
@@ -104,17 +104,6 @@ class RedisScheduler:
         except Exception as e:
             print(' + -- in 9 -- + ')
             print(e)
-
-
-    def get_key(self, s):
-        string = s
-        try:
-            if isinstance(s, bytes):
-                string = s.decode('utf-8')
-        except Exception as e:
-            print(e)
-            print(' -- in Exception -- ')
-        return string
 
 
     def start_listening(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
