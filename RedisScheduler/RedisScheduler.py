@@ -24,10 +24,8 @@ class RedisScheduler:
 
     def add_key(self, key, value, ttl=604800):
         try:
-            print(' -- Adding Key -- ')
             key_added = self.redis_client.set(key, '', ex=ttl)
             shadow_key_added = self.redis_client.set('_' + key, value)
-            print(key_added)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
@@ -39,9 +37,7 @@ class RedisScheduler:
         response = False
         try:
             ttl = int(self.get_timedelta(expiry_time))
-            ttl = 2
             if ttl>0:
-                print(' -- Adding Key -- ')
                 key = 'emails_'+str(uuid.uuid1())
                 response = self.redis_client.set(key, "0", ex=ttl)
                 shadow_key_added = self.redis_client.set('_' + key, value)
@@ -53,7 +49,6 @@ class RedisScheduler:
 
 
     def modify_event(self, key, value, scheduled_time):
-        print('-- Modifying Event --')
         response = False
         try:
             ttl = int(self.get_timedelta(scheduled_time))
@@ -72,7 +67,6 @@ class RedisScheduler:
 
 
     def subscribe_event(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
-        print('-- in subscribe event --')
         print(subscribe_channel, handler)
         try:
             pubsub_client = self.redis_client.pubsub()
@@ -84,23 +78,14 @@ class RedisScheduler:
                 try:
                     if shadow_key:
                         expired_key_value = self.redis_client.get(shadow_key)
-                        print(' + -- in 3 -- + ')
                         if expired_key_value:
                             expired_key_value = json.dumps(expired_key_value.decode('utf-8'))
-                            print(expired_key_value)
-                            print(' + -- in 4 -- + ')
                             expired_key_json = json.loads(expired_key_value)
-                            print(' vv expired key value vv ')
-                            print(expired_key_json)
                             if expired_key_json:
-                                print(' + -- in 5 -- + ')
                                 self.send_to_sqs(expired_key_json)
-                                print(' + -- in 6 -- + ')
                 except Exception as e:
-                    print(' + -- in 8 -- + ')
                     print(e)
                 if shadow_key:
-                    print(' + -- in 7 -- + ')
                     self.redis_client.delete(shadow_key)
         except Exception as e:
             print(' + -- in 9 -- + ')
@@ -154,19 +139,12 @@ class RedisScheduler:
 
 
     def send_to_sqs(self, msg):
-        print('-- Sending to SQS --')
         try:
             response = self.boto3_client.send_message(
                     QueueUrl=self.queue_url,
                     MessageBody=json.dumps(msg)
             )
-            print('-- Sent to SQS --')
+            print(response)
+            print(' -- Sent to SQS -- ')
         except Exception as e:
             print(e)
-            print('^^ Some Error in sending to sqs ^^')
-
-
-    # def terminate_processes(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
-    #     print(' -- listener previous stopping -- ')
-    #     listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
-    #     listener_service.terminate()
