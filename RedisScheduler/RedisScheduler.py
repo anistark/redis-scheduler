@@ -99,6 +99,7 @@ class RedisScheduler:
                     print(e)
                 if shadow_key:
                     print(' + -- in 7 -- + ')
+                    print(shadow_key)
                     self.redis_client.delete(shadow_key)
         except Exception as e:
             print(' + -- in 9 -- + ')
