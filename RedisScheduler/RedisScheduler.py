@@ -84,15 +84,24 @@ class RedisScheduler:
                 try:
                     if shadow_key:
                         expired_key_value = self.redis_client.get(shadow_key)
+                        print(expired_key_value)
                         print(' + -- in 3 -- + ')
                         if expired_key_value:
                             print(' + -- in 4 -- + ')
                             expired_key_json = json.loads(expired_key_value.decode('utf-8'))
                             print(' vv expired key value vv ')
                             print(expired_key_json)
+                            print(type(expired_key_json))
                             if expired_key_json:
                                 print(' + -- in 5 -- + ')
-                                self.send_to_sqs(expired_key_json)
+                                # self.send_to_sqs(expired_key_json)
+                                print(self.queue_url)
+                                print(type(expired_key_json))
+                                response = self.boto3_client.send_message(
+                                        QueueUrl=self.queue_url,
+                                        MessageBody=json.dumps(expired_key_json)
+                                )
+                                print(response)
                                 print(' + -- in 6 -- + ')
                 except Exception as e:
                     print(' + -- in 8 -- + ')
