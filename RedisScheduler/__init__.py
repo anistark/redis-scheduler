@@ -1,5 +1,5 @@
 __author__ = 'anistark'
-__version__ = '1.2.7'
+__version__ = '1.2.8'
 __title__ = 'RedisScheduler'
 
 # Importing Classes
