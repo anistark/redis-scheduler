@@ -3,4 +3,3 @@ setup.cfg
 setup.py
 RedisScheduler/RedisScheduler.py
 RedisScheduler/__init__.py
-RedisScheduler/test.py
