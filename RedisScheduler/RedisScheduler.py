@@ -59,7 +59,7 @@ class RedisScheduler:
                     redis_key = self.redis_client.set(key, value, scheduled_time)
                     shadow_key_added = self.redis_client.set('_' + key, value)
                 else:
-                    self.register_event(value, expiry_time)
+                    self.register_event(value, scheduled_time)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
