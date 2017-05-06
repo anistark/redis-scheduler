@@ -48,6 +48,21 @@ class RedisScheduler:
         return response
 
 
+    def register_event_key(self, value, expiry_time, event_key='emails'):
+        response = False
+        try:
+            ttl = int(self.get_timedelta(expiry_time))
+            if ttl>0:
+                key = event_key+'_'+str(uuid.uuid1())
+                response = self.redis_client.set(key, "0", ex=ttl)
+                shadow_key_added = self.redis_client.set('_' + key, value)
+                print(response)
+        except Exception as e:
+            print(e)
+            print(' -- Error while setting key -- ')
+        return response
+
+
     def modify_event(self, key, value, scheduled_time):
         response = False
         try:
@@ -59,7 +74,10 @@ class RedisScheduler:
                     redis_key = self.redis_client.set(key, value, scheduled_time)
                     shadow_key_added = self.redis_client.set('_' + key, value)
                 else:
-                    self.register_event(value, scheduled_time)
+                    if key.startswith("emails_"):
+                        self.register_event(value, scheduled_time)
+                    else:
+                        self.register_event_key(value, scheduled_time, key)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
@@ -74,7 +92,6 @@ class RedisScheduler:
             for message in pubsub_client.listen():
                 expired_key = self.get_key(message['data'])
                 if expired_key.startswith("emails_"):
-                    print(' >> expired key : '+str(expired_key))
                     shadow_key = '_%s' % expired_key
                     try:
                         if shadow_key:
@@ -89,7 +106,6 @@ class RedisScheduler:
                     if shadow_key:
                         self.redis_client.delete(shadow_key)
         except Exception as e:
-            print(' + -- in 9 -- + ')
             print(e)
 
 
