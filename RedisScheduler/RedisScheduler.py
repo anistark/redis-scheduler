@@ -73,20 +73,21 @@ class RedisScheduler:
             pubsub_client.subscribe(subscribe_channel)
             for message in pubsub_client.listen():
                 expired_key = self.get_key(message['data'])
-                print(' >> expired key : '+str(expired_key))
-                shadow_key = '_%s' % expired_key
-                try:
+                if expired_key.startswith("emails_"):
+                    print(' >> expired key : '+str(expired_key))
+                    shadow_key = '_%s' % expired_key
+                    try:
+                        if shadow_key:
+                            expired_key_value = self.redis_client.get(shadow_key)
+                            if expired_key_value:
+                                expired_key_value = json.dumps(expired_key_value.decode('utf-8'))
+                                expired_key_json = json.loads(expired_key_value)
+                                if expired_key_json:
+                                    self.send_to_sqs(expired_key_json)
+                    except Exception as e:
+                        print(e)
                     if shadow_key:
-                        expired_key_value = self.redis_client.get(shadow_key)
-                        if expired_key_value:
-                            expired_key_value = json.dumps(expired_key_value.decode('utf-8'))
-                            expired_key_json = json.loads(expired_key_value)
-                            if expired_key_json:
-                                self.send_to_sqs(expired_key_json)
-                except Exception as e:
-                    print(e)
-                if shadow_key:
-                    self.redis_client.delete(shadow_key)
+                        self.redis_client.delete(shadow_key)
         except Exception as e:
             print(' + -- in 9 -- + ')
             print(e)
