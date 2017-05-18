@@ -91,20 +91,22 @@ class RedisScheduler:
             pubsub_client.subscribe(subscribe_channel)
             for message in pubsub_client.listen():
                 expired_key = self.get_key(message['data'])
-                if expired_key.startswith("emails_"):
-                    shadow_key = '_%s' % expired_key
-                    try:
-                        if shadow_key:
-                            expired_key_value = self.redis_client.get(shadow_key)
-                            if expired_key_value:
-                                expired_key_value = json.dumps(expired_key_value.decode('utf-8'))
-                                expired_key_json = json.loads(expired_key_value)
-                                if expired_key_json:
-                                    self.send_to_sqs(expired_key_json)
-                    except Exception as e:
-                        print(e)
+                shadow_key = '_%s' % expired_key
+                try:
                     if shadow_key:
-                        self.redis_client.delete(shadow_key)
+                        expired_key_value = self.redis_client.get(shadow_key)
+                        if expired_key_value:
+                            expired_key_value = json.dumps(expired_key_value.decode('utf-8'))
+                            expired_key_json = json.loads(expired_key_value)
+                            if expired_key_json:
+                                if expired_key.startswith("emails_"):
+                                    self.send_to_sqs(expired_key_json)
+                                elif expired_key.startswith("checkpoint_dependency_"):
+                                    self.send_to_redis_tasks(expired_key_json)
+                except Exception as e:
+                    print(e)
+                if shadow_key:
+                    self.redis_client.delete(shadow_key)
         except Exception as e:
             print(e)
 
@@ -162,6 +164,15 @@ class RedisScheduler:
                     MessageBody=json.dumps(msg)
             )
             print(response)
+            print(' -- Sent to SQS -- ')
+        except Exception as e:
+            print(e)
+
+
+    def send_to_redis_tasks(self, msg):
+        try:
+            channel_name = 'dependency_execute'
+            self.redis_client.publish(channel_name, json.dumps(msg))
             print(' -- Sent to SQS -- ')
         except Exception as e:
             print(e)
