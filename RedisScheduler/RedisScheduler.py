@@ -126,8 +126,9 @@ class RedisScheduler:
         print(' -- listener initiating -- ')
         print(subscribe_channel, handler)
         try:
-            listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
-            listener_service.start()
+            # listener_service = multiprocessing.Process(target=self.subscribe_event, args=(subscribe_channel, handler,))
+            # listener_service.start()
+            self.subscribe_event(subscribe_channel, handler)
         except Exception as e:
             print(e)
         print(' -- listener initiated -- ')
