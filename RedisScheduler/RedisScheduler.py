@@ -21,7 +21,6 @@ class RedisScheduler:
             print(' -- Redis Connection Failed -- ')
             print(e)
 
-
     def add_key(self, key, value, ttl=604800):
         try:
             key_added = self.redis_client.set(key, '', ex=ttl)
@@ -32,21 +31,27 @@ class RedisScheduler:
             key_added = False
         return key_added
 
-
     def register_event(self, value, expiry_time):
         response = False
         try:
-            ttl = int(self.get_timedelta(expiry_time))
-            if ttl>0:
-                key = 'emails_'+str(uuid.uuid1())
-                response = self.redis_client.set(key, "0", ex=ttl)
-                shadow_key_added = self.redis_client.set('_' + key, value)
-                print(response)
+            if int(expiry_time) == 0:
+                print('now event', value)
+                sqs_response = self.boto3_client.send_message(
+                    QueueUrl=self.queue_url,
+                    MessageBody=json.dumps(value)
+                )
+                print(sqs_response)
+            else:
+                ttl = int(self.get_timedelta(expiry_time))
+                if ttl > 0:
+                    key = 'emails_'+str(uuid.uuid1())
+                    response = self.redis_client.set(key, "0", ex=ttl)
+                    shadow_key_added = self.redis_client.set('_' + key, value)
+                    # print(response)
         except Exception as e:
             print(e)
             print(' -- Error while setting key -- ')
         return response
-
 
     def register_event_key(self, value, expiry_time, event_key='emails'):
         response = False
@@ -61,7 +66,6 @@ class RedisScheduler:
             print(e)
             print(' -- Error while setting key -- ')
         return response
-
 
     def modify_event(self, key, value, scheduled_time):
         response = False
@@ -83,9 +87,8 @@ class RedisScheduler:
             print(' -- Error while setting key -- ')
         return response
 
-
     def subscribe_event(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
-        print(subscribe_channel, handler)
+        # print(subscribe_channel, handler)
         try:
             pubsub_client = self.redis_client.pubsub()
             pubsub_client.subscribe(subscribe_channel)
@@ -110,7 +113,6 @@ class RedisScheduler:
         except Exception as e:
             print(e)
 
-
     def get_key(self, s):
         string = s
         try:
@@ -120,7 +122,6 @@ class RedisScheduler:
             print(e)
             print(' -- in Exception -- ')
         return string
-
 
     def start_listening(self, subscribe_channel='__keyevent@0__:expired', handler='sqs'):
         print(' -- listener initiating -- ')
@@ -133,7 +134,6 @@ class RedisScheduler:
             print(e)
         print(' -- listener initiated -- ')
 
-
     def get_timedelta(self, timestamp):
         # current_time = datetime.now(pytz.timezone('UTC')).strftime('%Y-%m-%d %H:%M:%S%z')
         current_time = datetime.now(tzutc())
@@ -142,7 +142,6 @@ class RedisScheduler:
         # parsed_timestamp_in_utc = datetime_obj.astimezone(tz=timezone.utc)
         parsed_timestamp_in_utc = parsed_timestamp.astimezone(tzutc())
         return (parsed_timestamp_in_utc-current_time).total_seconds()
-
 
     def set_sqs_keys(self, access_key, secret_key, queue_name, region='ap-south-1'):
         try:
@@ -157,18 +156,16 @@ class RedisScheduler:
             print(e)
             print('^^ Some Error in connection to aws sqs ^^')
 
-
     def send_to_sqs(self, msg):
         try:
             response = self.boto3_client.send_message(
                     QueueUrl=self.queue_url,
                     MessageBody=json.dumps(msg)
             )
-            print(response)
-            print(' -- Sent to SQS -- ')
+            # print(response)
+            # print(' -- Sent to SQS -- ')
         except Exception as e:
             print(e)
-
 
     def send_to_redis_tasks(self, msg):
         try:
