@@ -36,11 +36,11 @@ class RedisScheduler:
         try:
             if int(expiry_time) == 0:
                 print('now event', value)
-                sqs_response = self.boto3_client.send_message(
-                    QueueUrl=self.queue_url,
-                    MessageBody=json.dumps(value)
-                )
-                print(sqs_response)
+                # sqs_response = self.boto3_client.send_message(
+                #     QueueUrl=self.queue_url,
+                #     MessageBody=json.dumps(value)
+                # )
+                # print(sqs_response)
             else:
                 ttl = int(self.get_timedelta(expiry_time))
                 if ttl > 0:
